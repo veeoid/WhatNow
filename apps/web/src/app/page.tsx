@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import InputSection from "@/components/InputSection";
 import PlanCard from "@/components/PlanCard";
 import { mockPlans } from "@/lib/mockPlans";
+import { useCurrentLocation } from "@/lib/useCurrentLocation";
 
 export default function Home() {
 	const [location, setLocation] = useState("");
@@ -15,19 +16,21 @@ export default function Home() {
 	const [showResults, setShowResults] = useState(false);
 	const resultsRef = useRef<HTMLElement>(null);
 
-	function handleUseCurrentLocation() {
-		navigator.geolocation.getCurrentPosition(
-			(position) => {
-				setLocation(
-					`${position.coords.latitude}, ${position.coords.longitude}`,
-				);
-				alert("Using your current location" + location);
-			},
-			(error) => {
-				alert("Geolocation error: " + error.message);
-			},
-		);
-	}
+	const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+		null,
+	);
+
+	const geo = useCurrentLocation();
+
+	// When the hook gets coordinates, reflect them in the UI + store them.
+	useEffect(() => {
+		if (geo.status === "success" && geo.coords) {
+			setCoords(geo.coords);
+			setLocation(
+				`Near you (${geo.coords.lat.toFixed(2)}, ${geo.coords.lng.toFixed(2)})`,
+			);
+		}
+	}, [geo.status, geo.coords]);
 
 	useEffect(() => {
 		if (showResults && window.innerWidth < 1024) {
@@ -63,7 +66,9 @@ export default function Home() {
 						<InputSection
 							location={location}
 							onLocationChange={setLocation}
-							onUseCurrentLocation={handleUseCurrentLocation}
+							onUseCurrentLocation={geo.request}
+							locationStatus={geo.status}
+							locationError={geo.error}
 							timeChoice={timeChoice}
 							setTimeChoice={setTimeChoice}
 							moodChoice={moodChoice}

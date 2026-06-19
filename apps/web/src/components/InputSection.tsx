@@ -16,6 +16,8 @@ type InputSectionProps = {
 	energyChoice: string;
 	setEnergyChoice: (value: string) => void;
 	onUseCurrentLocation: () => void;
+	locationStatus: "idle" | "loading" | "success" | "error";
+	locationError: string | null;
 	onGenerate: () => void;
 };
 
@@ -37,6 +39,8 @@ export default function InputSection({
 	location,
 	onLocationChange,
 	onUseCurrentLocation,
+	locationStatus,
+	locationError,
 	timeChoice,
 	setTimeChoice,
 	moodChoice,
@@ -69,10 +73,14 @@ export default function InputSection({
 					<button
 						type="button"
 						onClick={onUseCurrentLocation}
-						className="cursor-default text-xs font-medium text-sage-400 hover:text-sage-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400"
+						disabled={locationStatus === "loading"}
+						className="text-xs font-medium text-sage-400 hover:text-sage-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 disabled:opacity-50"
 					>
-						Use current location
+						{locationStatus === "loading" ? "Locating…" : "Use current location"}
 					</button>
+					{locationStatus === "error" && locationError && (
+						<p className="text-xs text-red-500">{locationError}</p>
+					)}
 				</div>
 
 				{/* Available time */}
