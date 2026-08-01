@@ -1,10 +1,13 @@
 "use client";
 
 import ChoicePill from "@/components/ChoicePill";
+import { LocationStatus } from "@/lib/useCurrentLocation";
 
 type InputSectionProps = {
 	location: string;
 	onLocationChange: (value: string) => void;
+	onLocationSelect: (value: string) => void;
+	locSuggestions: string[];
 	timeChoice: string;
 	setTimeChoice: (value: string) => void;
 	moodChoice: string;
@@ -16,7 +19,7 @@ type InputSectionProps = {
 	energyChoice: string;
 	setEnergyChoice: (value: string) => void;
 	onUseCurrentLocation: () => void;
-	locationStatus: "idle" | "loading" | "success" | "error";
+	locationStatus: LocationStatus;
 	locationError: string | null;
 	onGenerate: () => void;
 };
@@ -38,7 +41,9 @@ const energyOptions = ["Low", "Medium", "High"];
 export default function InputSection({
 	location,
 	onLocationChange,
+	onLocationSelect,
 	onUseCurrentLocation,
+	locSuggestions,
 	locationStatus,
 	locationError,
 	timeChoice,
@@ -69,6 +74,19 @@ export default function InputSection({
 							className="w-full rounded-2xl border border-sage-200 bg-sage-50 py-3 pl-9 pr-4 text-sm text-stone-900 placeholder:text-stone-400 transition focus:border-sage-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sage-100"
 							placeholder="Enter your location"
 						/>
+						{locSuggestions && locSuggestions.length > 0 && (
+							<ul className="absolute z-10 mt-1 w-full rounded-2xl border border-sage-200 bg-white shadow-sm">
+								{locSuggestions.map((suggestion) => (
+									<li
+										key={suggestion}
+										className="cursor-pointer px-4 py-2 text-sm text-stone-900 hover:bg-sage-100"
+										onClick={() => onLocationSelect(suggestion)}
+									>
+										{suggestion}
+									</li>
+								))}
+							</ul>
+						)}
 					</div>
 					<button
 						type="button"
@@ -76,7 +94,9 @@ export default function InputSection({
 						disabled={locationStatus === "loading"}
 						className="text-xs font-medium text-sage-400 hover:text-sage-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 disabled:opacity-50"
 					>
-						{locationStatus === "loading" ? "Locating…" : "Use current location"}
+						{locationStatus === "loading"
+							? "Locating…"
+							: "Use current location"}
 					</button>
 					{locationStatus === "error" && locationError && (
 						<p className="text-xs text-red-500">{locationError}</p>

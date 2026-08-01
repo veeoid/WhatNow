@@ -5,9 +5,12 @@ import InputSection from "@/components/InputSection";
 import PlanCard from "@/components/PlanCard";
 import { mockPlans } from "@/lib/mockPlans";
 import { useCurrentLocation } from "@/lib/useCurrentLocation";
+import { getGeocode, getReverseGeocode } from "@/lib/geoapify";
 
 export default function Home() {
 	const [location, setLocation] = useState("");
+	const [locSuggestions, setLocSuggestions] = useState<string[]>([]);
+	const skipNextFetchRef = useRef(false);
 	const [timeChoice, setTimeChoice] = useState("3 hours");
 	const [moodChoice, setMoodChoice] = useState("Chill");
 	const [budgetChoice, setBudgetChoice] = useState("Cheap");
@@ -16,21 +19,28 @@ export default function Home() {
 	const [showResults, setShowResults] = useState(false);
 	const resultsRef = useRef<HTMLElement>(null);
 
-	const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-		null,
-	);
-
 	const geo = useCurrentLocation();
 
-	// When the hook gets coordinates, reflect them in the UI + store them.
-	useEffect(() => {
-		if (geo.status === "success" && geo.coords) {
-			setCoords(geo.coords);
-			setLocation(
-				`Near you (${geo.coords.lat.toFixed(2)}, ${geo.coords.lng.toFixed(2)})`,
-			);
-		}
-	}, [geo.status, geo.coords]);
+	const handleUseCurrentLocation = () => {
+		geo.request((coords) => {
+			skipNextFetchRef.current = true;
+			getReverseGeocode(coords.lat, coords.lng)
+				.then((data) => {
+					setLocation(
+						data.results?.[0]?.formatted ??
+							`Near you (${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)})`,
+					);
+					setLocSuggestions([]);
+				})
+				.catch((error) => {
+					console.error(error);
+					setLocation(
+						`Near you (${coords.lat.toFixed(2)}, ${coords.lng.toFixed(2)})`,
+					);
+					setLocSuggestions([]);
+				});
+		});
+	};
 
 	useEffect(() => {
 		if (showResults && window.innerWidth < 1024) {
@@ -40,6 +50,48 @@ export default function Home() {
 			});
 		}
 	}, [showResults]);
+
+	useEffect(() => {
+		if (skipNextFetchRef.current) {
+			skipNextFetchRef.current = false;
+			return;
+		}
+		if (!location) {
+			return;
+		}
+		const controller = new AbortController();
+		const timeoutId = setTimeout(() => {
+			getGeocode(location, controller.signal)
+				.then((data) => {
+					setLocSuggestions(
+						data.results?.map((result) => result.formatted) ?? [],
+					);
+				})
+				.catch((error) => {
+					if (error instanceof Error && error.name !== "AbortError") {
+						console.error(error);
+						setLocSuggestions([]);
+					}
+				});
+		}, 300);
+		return () => {
+			clearTimeout(timeoutId);
+			controller.abort();
+		};
+	}, [location]);
+
+	const handleLocationChange = (value: string) => {
+		setLocation(value);
+		if (!value) {
+			setLocSuggestions([]);
+		}
+	};
+
+	const handleLocationSelect = (value: string) => {
+		skipNextFetchRef.current = true;
+		setLocation(value);
+		setLocSuggestions([]);
+	};
 
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-sage-50 to-sage-100">
@@ -65,10 +117,12 @@ export default function Home() {
 
 						<InputSection
 							location={location}
-							onLocationChange={setLocation}
-							onUseCurrentLocation={geo.request}
+							onLocationChange={handleLocationChange}
+							onLocationSelect={handleLocationSelect}
+							onUseCurrentLocation={handleUseCurrentLocation}
 							locationStatus={geo.status}
 							locationError={geo.error}
+							locSuggestions={locSuggestions}
 							timeChoice={timeChoice}
 							setTimeChoice={setTimeChoice}
 							moodChoice={moodChoice}

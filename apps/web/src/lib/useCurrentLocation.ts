@@ -3,14 +3,14 @@
 import { useState, useCallback } from "react";
 
 type Coords = { lat: number; lng: number };
-type Status = "idle" | "loading" | "success" | "error";
+export type LocationStatus = "idle" | "loading" | "success" | "error";
 
 export function useCurrentLocation() {
 	const [coords, setCoords] = useState<Coords | null>(null);
-	const [status, setStatus] = useState<Status>("idle");
+	const [status, setStatus] = useState<LocationStatus>("idle");
 	const [error, setError] = useState<string | null>(null);
 
-	const request = useCallback(() => {
+	const request = useCallback((onSuccess?: (coords: Coords) => void) => {
 		if (typeof navigator === "undefined" || !navigator.geolocation) {
 			setStatus("error");
 			setError("Location isn't supported here — type your city instead.");
@@ -20,8 +20,13 @@ export function useCurrentLocation() {
 		setError(null);
 		navigator.geolocation.getCurrentPosition(
 			(pos) => {
-				setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+				const nextCoords = {
+					lat: pos.coords.latitude,
+					lng: pos.coords.longitude,
+				};
+				setCoords(nextCoords);
 				setStatus("success");
+				onSuccess?.(nextCoords);
 			},
 			(err) => {
 				const messages: Record<number, string> = {
