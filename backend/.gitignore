@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+
+*.log
+*.sqlite3
+*.env
+*.bak
+*.tmp
+*.cache
+*.pid
+
+*.lock
