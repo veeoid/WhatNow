@@ -18,10 +18,13 @@ type InputSectionProps = {
 	setTransportChoice: (value: string) => void;
 	energyChoice: string;
 	setEnergyChoice: (value: string) => void;
+	companionsChoice: string;
+	setCompanionsChoice: (value: string) => void;
 	onUseCurrentLocation: () => void;
 	locationStatus: LocationStatus;
 	locationError: string | null;
 	onGenerate: () => void;
+	isGenerating: boolean;
 };
 
 const timeOptions = ["1 hour", "2 hours", "3 hours", "Half day"];
@@ -37,6 +40,7 @@ const moodOptions = [
 const budgetOptions = ["Free", "Cheap", "Flexible", "Expensive"];
 const transportOptions = ["Walk", "Transit", "Drive", "Rideshare"];
 const energyOptions = ["Low", "Medium", "High"];
+const companionsOptions = ["Solo", "Partner", "Friends", "Family"];
 
 export default function InputSection({
 	location,
@@ -56,7 +60,10 @@ export default function InputSection({
 	setTransportChoice,
 	energyChoice,
 	setEnergyChoice,
+	companionsChoice,
+	setCompanionsChoice,
 	onGenerate,
+	isGenerating,
 }: InputSectionProps) {
 	return (
 		<section className="rounded-3xl border border-sage-200 bg-white/90 p-5 shadow-sm">
@@ -177,14 +184,30 @@ export default function InputSection({
 						</div>
 					</div>
 				</div>
+
+				{/* Companions */}
+				<div className="space-y-2">
+					<p className="text-sm font-semibold text-stone-900">Who&apos;s coming?</p>
+					<div className="flex flex-wrap gap-2">
+						{companionsOptions.map((opt) => (
+							<ChoicePill
+								key={opt}
+								label={opt}
+								selected={companionsChoice === opt}
+								onClick={() => setCompanionsChoice(opt)}
+							/>
+						))}
+					</div>
+				</div>
 			</div>
 
 			<button
 				type="button"
 				onClick={onGenerate}
-				className="mt-6 w-full rounded-full bg-sage-700 py-4 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400"
+				disabled={isGenerating}
+				className="mt-6 w-full rounded-full bg-sage-700 py-4 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 disabled:opacity-60 disabled:active:scale-100"
 			>
-				Generate plans
+				{isGenerating ? "Generating…" : "Generate plans"}
 			</button>
 		</section>
 	);

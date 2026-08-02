@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import InputSection from "@/components/InputSection";
 import PlanCard from "@/components/PlanCard";
-import { mockPlans } from "@/lib/mockPlans";
+import { Plan } from "@/lib/types";
 import { useCurrentLocation } from "@/lib/useCurrentLocation";
 import { getGeocode, getReverseGeocode } from "@/lib/geoapify";
 
@@ -16,7 +16,10 @@ export default function Home() {
 	const [budgetChoice, setBudgetChoice] = useState("Cheap");
 	const [transportChoice, setTransportChoice] = useState("Walk");
 	const [energyChoice, setEnergyChoice] = useState("Medium");
-	const [showResults, setShowResults] = useState(false);
+	const [companionsChoice, setCompanionsChoice] = useState("Solo");
+	const [plans, setPlans] = useState<Plan[]>([]);
+	const [isGenerating, setIsGenerating] = useState(false);
+	const [generationError, setGenerationError] = useState<string | null>(null);
 	const resultsRef = useRef<HTMLElement>(null);
 
 	const geo = useCurrentLocation();
@@ -43,13 +46,13 @@ export default function Home() {
 	};
 
 	useEffect(() => {
-		if (showResults && window.innerWidth < 1024) {
+		if (plans.length > 0 && window.innerWidth < 1024) {
 			resultsRef.current?.scrollIntoView({
 				behavior: "smooth",
 				block: "start",
 			});
 		}
-	}, [showResults]);
+	}, [plans]);
 
 	useEffect(() => {
 		if (skipNextFetchRef.current) {
@@ -93,6 +96,39 @@ export default function Home() {
 		setLocSuggestions([]);
 	};
 
+	const handleGenerate = async () => {
+		setIsGenerating(true);
+		setGenerationError(null);
+		try {
+			const response = await fetch("/api/plan", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					location,
+					timeChoice,
+					moodChoice,
+					budgetChoice,
+					transportChoice,
+					energyChoice,
+					companionsChoice,
+				}),
+			});
+			const data = await response.json();
+			if (!response.ok) {
+				throw new Error(data.error ?? "Something went wrong generating plans.");
+			}
+			setPlans(data.plans);
+		} catch (error) {
+			setGenerationError(
+				error instanceof Error
+					? error.message
+					: "Something went wrong generating plans.",
+			);
+		} finally {
+			setIsGenerating(false);
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-gradient-to-b from-sage-50 to-sage-100">
 			<main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
@@ -133,12 +169,40 @@ export default function Home() {
 							setTransportChoice={setTransportChoice}
 							energyChoice={energyChoice}
 							setEnergyChoice={setEnergyChoice}
-							onGenerate={() => setShowResults(true)}
+							companionsChoice={companionsChoice}
+							setCompanionsChoice={setCompanionsChoice}
+							onGenerate={handleGenerate}
+							isGenerating={isGenerating}
 						/>
 					</div>
 
-					{/* Right column: Results or empty state */}
-					{showResults ? (
+					{/* Right column: Results, loading, error, or empty state */}
+					{isGenerating ? (
+						<div className="mt-8 flex items-center justify-center rounded-3xl border border-dashed border-sage-300 bg-white/50 px-6 py-20 text-center lg:mt-0">
+							<div>
+								<p className="text-3xl animate-pulse">✦</p>
+								<p className="mt-3 text-sm font-semibold text-stone-700">
+									Finding real places nearby…
+								</p>
+								<p className="mt-2 text-sm leading-relaxed text-stone-400">
+									This can take up to a minute while we search and put
+									together your plans.
+								</p>
+							</div>
+						</div>
+					) : generationError ? (
+						<div className="mt-8 flex items-center justify-center rounded-3xl border border-dashed border-red-300 bg-white/50 px-6 py-20 text-center lg:mt-0">
+							<div>
+								<p className="text-3xl">⚠</p>
+								<p className="mt-3 text-sm font-semibold text-stone-700">
+									Couldn&apos;t generate plans
+								</p>
+								<p className="mt-2 text-sm leading-relaxed text-stone-400">
+									{generationError}
+								</p>
+							</div>
+						</div>
+					) : plans.length > 0 ? (
 						<section
 							ref={resultsRef}
 							className="mt-8 scroll-mt-6 space-y-4 lg:mt-0"
@@ -152,7 +216,7 @@ export default function Home() {
 									{transportChoice}
 								</p>
 							</div>
-							{mockPlans.map((plan) => (
+							{plans.map((plan) => (
 								<PlanCard key={plan.type} plan={plan} />
 							))}
 						</section>
@@ -173,7 +237,7 @@ export default function Home() {
 				</div>
 
 				<footer className="mt-12 text-center text-xs text-sage-500">
-					Plans for spontaneous moments · No backend yet
+					Plans for spontaneous moments
 				</footer>
 			</main>
 		</div>

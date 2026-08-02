@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 
-from backend.plan_generator import ChatRequest, generate_plans
+from plan_generator import ChatRequest, generate_plans
 
 app = Flask(__name__)
 
@@ -29,4 +29,4 @@ def plan():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)
