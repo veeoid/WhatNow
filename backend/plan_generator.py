@@ -5,6 +5,7 @@ from urllib.parse import quote
 
 import requests
 from dotenv import load_dotenv
+from groq import BadRequestError, RateLimitError
 from langchain.agents import create_agent
 from langchain_core.tools import tool
 from langchain_groq import ChatGroq
@@ -469,6 +470,26 @@ def _normalize_schedule(plan: Plan) -> None:
     plan.travel_time_minutes = sum(stop.travel_minutes_to_next for stop in plan.stops)
 
 
+def _invoke_with_retry(user_message: str, attempts: int = 3) -> dict:
+    """Run the agent, retrying when the model emits a malformed structured response.
+
+    Groq rejects these as 'tool_use_failed' 400s. It happens intermittently (roughly one
+    call in five) and is not caused by the input, so simply asking again almost always
+    succeeds. Rate limits are re-raised immediately -- retrying those only makes it worse.
+    """
+    for attempt in range(attempts):
+        try:
+            return agent.invoke(
+                {"messages": [{"role": "user", "content": user_message}]}
+            )
+        except RateLimitError:
+            raise
+        except BadRequestError:
+            if attempt == attempts - 1:
+                raise
+    raise AssertionError("unreachable")
+
+
 def _build_plan(draft: PlanDraft, registry: dict[str, dict]) -> Plan:
     """Turn a draft into a real plan, keeping only stops that match a verified place."""
     stops = []
@@ -524,13 +545,7 @@ def generate_plans(request: ChatRequest) -> PlansResponse:
         if not candidates:
             return PlansResponse(plans=[])
 
-        result = agent.invoke(
-            {
-                "messages": [
-                    {"role": "user", "content": _user_message(request, candidates)}
-                ]
-            }
-        )
+        result = _invoke_with_retry(_user_message(request, candidates))
 
     draft: PlansDraft = result["structured_response"]
     response = PlansResponse(
