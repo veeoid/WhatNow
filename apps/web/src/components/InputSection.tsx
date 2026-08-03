@@ -94,27 +94,24 @@ export default function InputSection({
 	}, [hasSuggestions, onDismissSuggestions]);
 
 	return (
-		<section className="rounded-3xl border border-sage-200 bg-white/90 p-5 shadow-sm">
-			<div className="space-y-5">
+		<section className="rounded-2xl bg-paper-card p-7 shadow-[0_1px_3px_rgba(38,38,36,0.05),0_10px_28px_-18px_rgba(38,38,36,0.18)] sm:p-8">
+			<div className="space-y-6">
 				{/* Location */}
 				<div className="space-y-2">
-					<p className="text-sm font-semibold text-stone-900">Where are you?</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Where are you?</p>
 					<div className="relative" ref={locationFieldRef}>
-						<span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-base">
-							📍
-						</span>
 						<input
 							value={location}
 							onChange={(e) => onLocationChange(e.target.value)}
-							className="w-full rounded-2xl border border-sage-200 bg-sage-50 py-3 pl-9 pr-4 text-sm text-stone-900 placeholder:text-stone-400 transition focus:border-sage-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-sage-100"
+							className="w-full rounded-full border border-rule bg-transparent px-4 py-3 text-[15px] font-light text-ink-900 placeholder:text-ink-500/60 transition focus:border-ink-500/50 focus:outline-none"
 							placeholder="Enter your location"
 						/>
 						{locSuggestions && locSuggestions.length > 0 && (
-							<ul className="absolute z-10 mt-1 w-full rounded-2xl border border-sage-200 bg-white shadow-sm">
+							<ul className="absolute z-10 mt-1.5 w-full overflow-hidden rounded-2xl border border-rule bg-paper-card shadow-[0_12px_32px_-16px_rgba(38,38,36,0.3)]">
 								{locSuggestions.map((suggestion) => (
 									<li
 										key={suggestion}
-										className="cursor-pointer px-4 py-2 text-sm text-stone-900 hover:bg-sage-100"
+										className="cursor-pointer px-4 py-2.5 text-[13px] font-light text-ink-700 hover:bg-paper-alt"
 										onClick={() => onLocationSelect(suggestion)}
 									>
 										{suggestion}
@@ -127,20 +124,20 @@ export default function InputSection({
 						type="button"
 						onClick={onUseCurrentLocation}
 						disabled={locationStatus === "loading"}
-						className="text-xs font-medium text-sage-400 hover:text-sage-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 disabled:opacity-50"
+						className="text-xs font-light text-ink-500 underline underline-offset-4 decoration-rule hover:text-ink-900 focus:outline-none disabled:opacity-50"
 					>
 						{locationStatus === "loading"
 							? "Locating…"
 							: "Use current location"}
 					</button>
 					{locationStatus === "error" && locationError && (
-						<p className="text-xs text-red-500">{locationError}</p>
+						<p className="text-xs text-clay-600">{locationError}</p>
 					)}
 				</div>
 
 				{/* Available time */}
 				<div className="space-y-2">
-					<p className="text-sm font-semibold text-stone-900">Available time</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Available time</p>
 					<div className="flex flex-wrap gap-2">
 						{timeOptions.map((opt) => (
 							<ChoicePill
@@ -155,7 +152,7 @@ export default function InputSection({
 
 				{/* Mood */}
 				<div className="space-y-2">
-					<p className="text-sm font-semibold text-stone-900">Mood / vibe</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Mood / vibe</p>
 					<div className="flex flex-wrap gap-2">
 						{moodOptions.map((opt) => (
 							<ChoicePill
@@ -170,7 +167,7 @@ export default function InputSection({
 
 				{/* Budget */}
 				<div className="space-y-2">
-					<p className="text-sm font-semibold text-stone-900">Budget</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Budget</p>
 					<div className="flex flex-wrap gap-2">
 						{budgetOptions.map((opt) => (
 							<ChoicePill
@@ -186,7 +183,7 @@ export default function InputSection({
 				{/* Transport + Energy */}
 				<div className="grid grid-cols-2 gap-4">
 					<div className="space-y-2">
-						<p className="text-sm font-semibold text-stone-900">Transport</p>
+						<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Transport</p>
 						<div className="flex flex-wrap gap-2">
 							{transportOptions.map((opt) => (
 								<ChoicePill
@@ -199,7 +196,7 @@ export default function InputSection({
 						</div>
 					</div>
 					<div className="space-y-2">
-						<p className="text-sm font-semibold text-stone-900">Energy</p>
+						<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Energy</p>
 						<div className="flex flex-wrap gap-2">
 							{energyOptions.map((opt) => (
 								<ChoicePill
@@ -215,7 +212,7 @@ export default function InputSection({
 
 				{/* Companions */}
 				<div className="space-y-2">
-					<p className="text-sm font-semibold text-stone-900">Who&apos;s coming?</p>
+					<p className="font-mono text-[10px] uppercase tracking-[0.16em] text-ink-500">Who&apos;s coming?</p>
 					<div className="flex flex-wrap gap-2">
 						{companionsOptions.map((opt) => (
 							<ChoicePill
@@ -233,7 +230,7 @@ export default function InputSection({
 				type="button"
 				onClick={onGenerate}
 				disabled={isGenerating}
-				className="mt-6 w-full rounded-full bg-sage-700 py-4 text-sm font-semibold text-white shadow-sm transition hover:bg-sage-800 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-sage-400 disabled:opacity-60 disabled:active:scale-100"
+				className="mt-8 w-full rounded-full bg-ink-900 py-3.5 text-sm font-medium text-white transition hover:bg-[#3a3a37] focus:outline-none focus-visible:ring-2 focus-visible:ring-ink-500/30 focus-visible:ring-offset-2 disabled:opacity-50"
 			>
 				{isGenerating ? "Generating…" : "Generate plans"}
 			</button>

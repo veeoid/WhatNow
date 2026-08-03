@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4f7f4;
-  --foreground: #171717;
+  /* Near-white page; surfaces separate by subtle tone rather than borders. */
+  --background: #fcfcfc;
+  --foreground: #333333;
 }
 
 @theme {
@@ -17,21 +18,60 @@
   --color-sage-800: #223826;
   --color-sage-900: #172419;
   --color-sage-950: #0e160f;
+
+  /* Warm counterpoint to sage — used sparingly for the recommended plan and prices. */
+  --color-clay-50: #faf6f1;
+  --color-clay-100: #f2e8dd;
+  --color-clay-200: #e4d0ba;
+  --color-clay-300: #d0ae8e;
+  --color-clay-400: #b98a62;
+  --color-clay-500: #9c6c45;
+  --color-clay-600: #7d5537;
+  --color-clay-700: #5f412b;
+
+  /* Paper tones for surfaces and hairlines. */
+  --color-paper: #fcfcfc;
+  --color-paper-alt: #f7f7f5;
+  --color-paper-card: #ffffff;
+  --color-rule: #e8e6e1;
+  --color-ink-500: #7a7a75;
+  --color-ink-700: #4a4a45;
+  --color-ink-900: #262624;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Times and durations sit in columns; keep the digits from shifting width. */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Hero backdrop: uses /images/hero.jpg when present, and degrades to a deep
+   landscape-toned wash so the layout never collapses if the asset is missing. */
+.hero-bg {
+  background-color: #1f2a24;
+  background-image: linear-gradient(
+      to bottom,
+      rgba(18, 26, 22, 0.55) 0%,
+      rgba(18, 26, 22, 0.25) 40%,
+      rgba(18, 26, 22, 0.85) 100%
+    ),
+    url("/images/hero.jpg");
+  background-size: cover;
+  background-position: center 55%;
 }

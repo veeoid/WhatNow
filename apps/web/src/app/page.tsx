@@ -145,25 +145,50 @@ export default function Home() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-b from-sage-50 to-sage-100">
-			<main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+		<div className="min-h-screen bg-paper">
+			{/* Hero: full-bleed image, wordmark top-left, headline bottom-left */}
+			<header className="hero-bg relative flex h-[78vh] min-h-[520px] flex-col justify-between px-6 py-7 sm:px-10 sm:py-9">
+				<div className="flex items-center gap-2.5">
+					<span className="h-5 w-5 rounded-full border border-white/70" />
+					<span className="text-[15px] font-medium tracking-wide text-white">
+						WhatNow
+					</span>
+				</div>
+
+				<div className="max-w-2xl">
+					<h1 className="text-[clamp(2.75rem,7vw,4.25rem)] font-light leading-[1.04] tracking-tight text-white">
+						Something worth doing,
+						<br />
+						starting now
+					</h1>
+					<p className="mt-5 max-w-md text-[15px] font-light leading-relaxed text-white/70">
+						Five itineraries built from real places near you — scheduled,
+						costed, and ready to walk out the door.
+					</p>
+					<a
+						href="#plan"
+						className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-medium text-ink-900 transition hover:bg-white/90"
+					>
+						Plan my next few hours
+						<span aria-hidden="true">&rarr;</span>
+					</a>
+				</div>
+			</header>
+
+			<main id="plan" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
 				<div className="mx-auto max-w-2xl">
-					<div className="space-y-6">
-						<header className="text-center">
-							<span className="inline-flex rounded-full bg-sage-200 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-sage-700">
-								Beta · Built for spontaneous plans
-							</span>
-							<h1 className="mt-5 text-5xl font-bold tracking-tight text-sage-950">
-								WhatNow
-							</h1>
-							<p className="mt-3 text-xl font-semibold leading-snug text-stone-800">
-								Find something worth doing right now.
+					<div className="space-y-8">
+						<div className="text-center">
+							<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
+								Tell us the basics
 							</p>
-							<p className="mx-auto mt-2.5 max-w-[420px] text-sm leading-relaxed text-stone-500">
-								Tell us your time, mood, and budget. We&apos;ll build five
-								ready-to-go itineraries from real places near you.
+							<h2 className="mt-3 text-[30px] font-light tracking-tight text-ink-900">
+								Where are you, and how long have you got?
+							</h2>
+							<p className="mx-auto mt-3 max-w-md text-sm font-light leading-relaxed text-ink-500">
+								Everything below shapes what we look for nearby.
 							</p>
-						</header>
+						</div>
 
 						<InputSection
 							location={location}
@@ -194,39 +219,43 @@ export default function Home() {
 
 				{/* Results, loading, error, or empty state */}
 				{isGenerating ? (
-					<div className="mt-10 flex items-center justify-center rounded-3xl border border-dashed border-sage-300 bg-white/50 px-6 py-20 text-center">
-						<div>
-							<p className="animate-pulse text-3xl">✦</p>
-							<p className="mt-3 text-sm font-semibold text-stone-700">
-								Finding real places nearby…
-							</p>
-							<p className="mt-2 text-sm leading-relaxed text-stone-400">
-								This can take up to a minute while we search and build your
-								itineraries.
-							</p>
-						</div>
+					<div className="mx-auto mt-24 max-w-md text-center">
+						<p className="animate-pulse font-mono text-[10px] uppercase tracking-[0.2em] text-ink-500">
+							Searching nearby
+						</p>
+						<p className="mt-3 text-[30px] font-light tracking-tight text-ink-900">
+							Finding real places near you
+						</p>
+						<p className="mx-auto mt-3 max-w-md text-sm font-light leading-relaxed text-ink-500">
+							Checking what&apos;s around, then building itineraries that fit the
+							time you have. Usually about fifteen seconds.
+						</p>
 					</div>
 				) : generationError ? (
-					<div className="mt-10 flex items-center justify-center rounded-3xl border border-dashed border-red-300 bg-white/50 px-6 py-20 text-center">
-						<div>
-							<p className="text-3xl">⚠</p>
-							<p className="mt-3 text-sm font-semibold text-stone-700">
-								Couldn&apos;t generate plans
-							</p>
-							<p className="mt-2 text-sm leading-relaxed text-stone-400">
-								{generationError}
-							</p>
-						</div>
+					<div className="mx-auto mt-24 max-w-md text-center">
+						<p className="font-mono text-[10px] uppercase tracking-[0.2em] text-clay-600">
+							Something went wrong
+						</p>
+						<p className="mt-3 text-[30px] font-light tracking-tight text-ink-900">
+							Couldn&apos;t build your plans
+						</p>
+						<p className="mx-auto mt-3 max-w-md text-sm font-light leading-relaxed text-ink-500">
+							{generationError}
+						</p>
 					</div>
 				) : plans.length > 0 && planStartTime ? (
-					<section ref={resultsRef} className="mt-10 scroll-mt-6">
-						<div className="mb-4 text-center">
-							<p className="text-base font-semibold text-stone-900">
-								{plans.length} itineraries for the next {timeChoice.toLowerCase()}
-							</p>
-							<p className="mt-1 text-sm text-stone-500">
+					<section ref={resultsRef} className="mt-24 scroll-mt-8">
+						<div className="mb-10 text-center">
+							<p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-500">
 								{moodChoice} · {budgetChoice} · {transportChoice} ·{" "}
 								{companionsChoice}
+							</p>
+							<h2 className="mt-3 text-[30px] font-light tracking-tight text-ink-900">
+								{plans.length} ways to spend the next{" "}
+								{timeChoice.toLowerCase()}
+							</h2>
+							<p className="mx-auto mt-3 max-w-md text-sm font-light leading-relaxed text-ink-500">
+								Every stop is a real, nearby place — pick one and go.
 							</p>
 						</div>
 						<div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -240,24 +269,29 @@ export default function Home() {
 						</div>
 					</section>
 				) : (
-					<div className="mt-10 flex items-center justify-center rounded-3xl border border-dashed border-sage-300 bg-white/50 px-6 py-20 text-center">
-						<div>
-							<p className="text-3xl">✦</p>
-							<p className="mt-3 text-sm font-semibold text-stone-700">
-								Ready when you are
-							</p>
-							<p className="mt-2 text-sm leading-relaxed text-stone-400">
-								Fill in your details and tap Generate plans to see five
-								itineraries for your next few hours.
-							</p>
-						</div>
+					<div className="mx-auto mt-24 max-w-md text-center">
+						<p className="text-sm font-light leading-relaxed text-ink-500">
+							Fill in where you are and how long you&apos;ve got — five
+							itineraries, built from places that actually exist near you.
+						</p>
 					</div>
 				)}
 
-				<footer className="mt-12 text-center text-xs text-sage-500">
-					Plans for spontaneous moments
-				</footer>
 			</main>
+
+			<footer className="bg-[#262624] px-6 py-14 sm:px-10">
+				<div className="mx-auto flex max-w-6xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex items-center gap-2.5">
+						<span className="h-4 w-4 rounded-full border border-white/50" />
+						<span className="text-sm font-medium tracking-wide text-white">
+							WhatNow
+						</span>
+					</div>
+					<p className="font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
+						Real places · Real times · No filler
+					</p>
+				</div>
+			</footer>
 		</div>
 	);
 }
