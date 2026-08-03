@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getBackendUrl } from "@/lib/backend";
 
 // Free hosting tiers sleep the backend after ~15 minutes idle, and waking it takes ~50s.
 // The page pings this on load so the backend is awake by the time someone submits the form,
@@ -6,10 +7,8 @@ import { NextResponse } from "next/server";
 export const maxDuration = 60;
 
 export async function GET() {
-	const backendUrl = process.env.BACKEND_URL ?? "http://127.0.0.1:5001";
-
 	try {
-		const response = await fetch(`${backendUrl}/health`, {
+		const response = await fetch(`${getBackendUrl()}/health`, {
 			cache: "no-store",
 			signal: AbortSignal.timeout(55_000),
 		});

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBackendUrl } from "@/lib/backend";
 
 // Plan generation runs ~12s and can take longer. Without this the hosting platform's
 // default function timeout (often 10-15s) kills the request before the backend answers.
@@ -124,7 +125,15 @@ export async function POST(request: NextRequest) {
 		weather,
 	};
 
-	const backendUrl = process.env.BACKEND_URL ?? "http://127.0.0.1:5000";
+	let backendUrl: string;
+	try {
+		backendUrl = getBackendUrl();
+	} catch {
+		return NextResponse.json(
+			{ error: "Server is misconfigured: BACKEND_URL is not set." },
+			{ status: 500 },
+		);
+	}
 
 	let response: Response;
 	try {
