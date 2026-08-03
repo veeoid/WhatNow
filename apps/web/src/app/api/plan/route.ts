@@ -40,12 +40,13 @@ type BackendStop = {
 	name: string;
 	category: string;
 	address: string;
+	start_offset_minutes: number;
 	duration_minutes: number;
+	travel_minutes_to_next: number;
 	estimated_cost: string;
 };
 
 type BackendPlan = {
-	type: "Lowest Effort" | "Best Match" | "More Fun";
 	title: string;
 	summary: string;
 	stops: BackendStop[];
@@ -53,6 +54,7 @@ type BackendPlan = {
 	travel_time_minutes: number;
 	estimated_cost: string;
 	vibe_match_reason: string;
+	is_recommended: boolean;
 	map_url: string;
 };
 
@@ -136,26 +138,37 @@ export async function POST(request: NextRequest) {
 	}
 
 	if (!response.ok) {
-		const errorText = await response.text();
-		return NextResponse.json({ error: errorText }, { status: response.status });
+		// The backend sends {error} JSON, but an unhandled crash yields an HTML page --
+		// never surface that raw to the user.
+		const message = await response
+			.json()
+			.then((body) => body.error)
+			.catch(() => null);
+		return NextResponse.json(
+			{ error: message ?? "Couldn't build plans just now. Please try again." },
+			{ status: response.status },
+		);
 	}
 
 	const data: { plans: BackendPlan[] } = await response.json();
 
 	const plans = data.plans.map((plan) => ({
-		type: plan.type,
 		title: plan.title,
 		summary: plan.summary,
 		stops: plan.stops.map((stop) => ({
 			name: stop.name,
 			category: stop.category,
+			address: stop.address,
+			startOffsetMinutes: stop.start_offset_minutes,
 			durationMinutes: stop.duration_minutes,
+			travelMinutesToNext: stop.travel_minutes_to_next,
 			estimatedCost: stop.estimated_cost,
 		})),
 		totalDurationMinutes: plan.total_duration_minutes,
 		travelTimeMinutes: plan.travel_time_minutes,
 		estimatedCost: plan.estimated_cost,
 		vibeMatchReason: plan.vibe_match_reason,
+		isRecommended: plan.is_recommended,
 		mapUrl: plan.map_url,
 	}));
 

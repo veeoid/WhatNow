@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import ChoicePill from "@/components/ChoicePill";
 import { LocationStatus } from "@/lib/useCurrentLocation";
 
@@ -7,6 +8,7 @@ type InputSectionProps = {
 	location: string;
 	onLocationChange: (value: string) => void;
 	onLocationSelect: (value: string) => void;
+	onDismissSuggestions: () => void;
 	locSuggestions: string[];
 	timeChoice: string;
 	setTimeChoice: (value: string) => void;
@@ -46,6 +48,7 @@ export default function InputSection({
 	location,
 	onLocationChange,
 	onLocationSelect,
+	onDismissSuggestions,
 	onUseCurrentLocation,
 	locSuggestions,
 	locationStatus,
@@ -65,13 +68,38 @@ export default function InputSection({
 	onGenerate,
 	isGenerating,
 }: InputSectionProps) {
+	const locationFieldRef = useRef<HTMLDivElement>(null);
+	const hasSuggestions = locSuggestions.length > 0;
+
+	// The dropdown floats over the controls below it, so it has to close on an outside
+	// click or those controls can't be reached.
+	useEffect(() => {
+		if (!hasSuggestions) return;
+		const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+			if (!locationFieldRef.current?.contains(event.target as Node)) {
+				onDismissSuggestions();
+			}
+		};
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") onDismissSuggestions();
+		};
+		document.addEventListener("mousedown", handlePointerDown);
+		document.addEventListener("touchstart", handlePointerDown);
+		document.addEventListener("keydown", handleKeyDown);
+		return () => {
+			document.removeEventListener("mousedown", handlePointerDown);
+			document.removeEventListener("touchstart", handlePointerDown);
+			document.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [hasSuggestions, onDismissSuggestions]);
+
 	return (
 		<section className="rounded-3xl border border-sage-200 bg-white/90 p-5 shadow-sm">
 			<div className="space-y-5">
 				{/* Location */}
 				<div className="space-y-2">
 					<p className="text-sm font-semibold text-stone-900">Where are you?</p>
-					<div className="relative">
+					<div className="relative" ref={locationFieldRef}>
 						<span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 select-none text-base">
 							📍
 						</span>

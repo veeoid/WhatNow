@@ -1,4 +1,6 @@
 from flask import Flask, jsonify, request
+from groq import GroqError, RateLimitError
+from pydantic import ValidationError
 
 from plan_generator import ChatRequest, generate_plans
 
@@ -12,20 +14,31 @@ def health():
 
 @app.route("/plan", methods=["POST"])
 def plan():
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
 
-    chat_request = ChatRequest(
-        current_location=data["current_location"],
-        available_time=data["available_time"],
-        vibe=data["vibe"],
-        budget=data["budget"],
-        transportation=data["transportation"],
-        energy_level=data["energy_level"],
-        companions=data["companions"],
-        weather=data["weather"],
-    )
-    plans = generate_plans(chat_request)
-    return jsonify({"plans": [plan.dict() for plan in plans.plans]})
+    try:
+        chat_request = ChatRequest(**data)
+    except ValidationError:
+        return jsonify({"error": "Invalid request body."}), 400
+
+    try:
+        plans = generate_plans(chat_request)
+    except RateLimitError:
+        return jsonify(
+            {"error": "The planning service is rate limited right now. Try again shortly."}
+        ), 429
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except GroqError:
+        app.logger.exception("Plan generation failed")
+        return jsonify({"error": "Couldn't build plans just now. Please try again."}), 502
+
+    if not plans.plans:
+        return jsonify(
+            {"error": "Couldn't find enough open places near there. Try a wider area."}
+        ), 422
+
+    return jsonify({"plans": [plan.model_dump() for plan in plans.plans]})
 
 
 if __name__ == "__main__":
