@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: whatnow-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # --timeout 180 because plan generation runs ~12s and can take longer; gunicorn's
+    # 30s default would kill requests mid-flight.
+    startCommand: gunicorn service:app --bind 0.0.0.0:$PORT --workers 2 --timeout 180 --access-logfile -
+    healthCheckPath: /health
+    envVars:
+      # Set these in the Render dashboard; sync:false keeps them out of the repo.
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEO_API_KEY
+        sync: false

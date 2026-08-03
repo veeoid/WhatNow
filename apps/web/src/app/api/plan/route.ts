@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Plan generation runs ~12s and can take longer. Without this the hosting platform's
+// default function timeout (often 10-15s) kills the request before the backend answers.
+export const maxDuration = 60;
+
 const BUDGET_DOLLARS: Record<string, number> = {
 	Free: 0,
 	Cheap: 15,

@@ -46,6 +46,14 @@ export default function Home() {
 		});
 	};
 
+	// Wake the backend while the user fills in the form, so a cold start doesn't land on
+	// their first "Generate plans" click. Fire-and-forget: failure here changes nothing.
+	useEffect(() => {
+		const controller = new AbortController();
+		fetch("/api/warmup", { signal: controller.signal }).catch(() => {});
+		return () => controller.abort();
+	}, []);
+
 	useEffect(() => {
 		if (plans.length > 0 && window.innerWidth < 1024) {
 			resultsRef.current?.scrollIntoView({
