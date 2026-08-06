@@ -1,0 +1,35 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Debug backend/service.py",
+			"type": "python",
+			"request": "launch",
+			"program": "${workspaceFolder}/backend/service.py",
+			"python": "${workspaceFolder}/backend/agentic-env/bin/python",
+			"cwd": "${workspaceFolder}/backend",
+			"console": "integratedTerminal",
+			"env": {
+				"FLASK_ENV": "development"
+			},
+			"justMyCode": true,
+			"subProcess": true
+		},
+		{
+			"name": "Debug backend with flask run",
+			"type": "python",
+			"request": "launch",
+			"module": "flask",
+			"python": "${workspaceFolder}/backend/agentic-env/bin/python",
+			"cwd": "${workspaceFolder}/backend",
+			"console": "integratedTerminal",
+			"env": {
+				"FLASK_APP": "service.py",
+				"FLASK_ENV": "development"
+			},
+			"args": ["run", "--port", "5001"],
+			"justMyCode": true,
+			"subProcess": true
+		}
+	]
+}

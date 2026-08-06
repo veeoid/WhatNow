@@ -25,13 +25,17 @@ def plan():
         plans = generate_plans(chat_request)
     except RateLimitError:
         return jsonify(
-            {"error": "The planning service is rate limited right now. Try again shortly."}
+            {
+                "error": "The planning service is rate limited right now. Try again shortly."
+            }
         ), 429
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
     except GroqError:
         app.logger.exception("Plan generation failed")
-        return jsonify({"error": "Couldn't build plans just now. Please try again."}), 502
+        return jsonify(
+            {"error": "Couldn't build plans just now. Please try again."}
+        ), 502
 
     if not plans.plans:
         return jsonify(
